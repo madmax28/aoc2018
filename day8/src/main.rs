@@ -16,7 +16,7 @@ struct Node {
 }
 
 impl Node {
-    fn new(num_children: usize, num_metadata: usize) -> Self {
+    fn with_capacity(num_children: usize, num_metadata: usize) -> Self {
         Node {
             children: Vec::with_capacity(num_children),
             metadata: Vec::with_capacity(num_metadata),
@@ -48,36 +48,35 @@ struct Tree {
 
 impl Tree {
     fn from_nums(nums: &[u32]) -> Result<Self, Error> {
-        let (mut nodes, mut stack, mut next_id) = (Vec::new(), Vec::new(), 0);
+        let mut nodes: Vec<Node> = Vec::new();
+        let mut stack: Vec<NodeState> = Vec::new();
+        let mut next_id = 0;
+
         let mut it = nums.iter();
         while let Some(num) = it.next() {
-            if stack.is_empty() {
+            if let Some(s) = stack.last_mut() {
+                if s.child_cnt > 0 {
+                    s.child_cnt -= 1;
+                    nodes[s.id].children.push(next_id);
+                    let (child_cnt, data_cnt) = (*num, *it.next().ok_or(Error::InvalidInput)?);
+                    stack.push(NodeState::new(next_id, child_cnt, data_cnt));
+                    nodes.push(Node::with_capacity(child_cnt as usize, data_cnt as usize));
+                    next_id += 1;
+                } else if s.data_cnt > 0 {
+                    s.data_cnt -= 1;
+                    nodes[s.id].metadata.push(*num);
+                    if s.data_cnt == 0 {
+                        stack.pop();
+                    }
+                } else {
+                    return Err(Error::BuildTree);
+                }
+            } else {
                 // First node
                 let (child_cnt, data_cnt) = (*num, *it.next().ok_or(Error::InvalidInput)?);
                 stack.push(NodeState::new(next_id, child_cnt, data_cnt));
-                nodes.push(Node::new(child_cnt as usize, data_cnt as usize));
+                nodes.push(Node::with_capacity(child_cnt as usize, data_cnt as usize));
                 next_id += 1;
-                continue;
-            }
-
-            let s: &mut NodeState = stack.last_mut().ok_or(Error::BuildTree)?;
-            if s.child_cnt > 0 {
-                s.child_cnt -= 1;
-                nodes[s.id].children.push(next_id);
-                let (child_cnt, data_cnt) = (*num, *it.next().ok_or(Error::InvalidInput)?);
-                stack.push(NodeState::new(next_id, child_cnt, data_cnt));
-                nodes.push(Node::new(child_cnt as usize, data_cnt as usize));
-                next_id += 1;
-                continue;
-            } else if s.data_cnt > 0 {
-                s.data_cnt -= 1;
-                nodes[s.id].metadata.push(*num);
-                if s.data_cnt == 0 {
-                    stack.pop();
-                }
-                continue;
-            } else {
-                return Err(Error::BuildTree);
             }
         }
 
