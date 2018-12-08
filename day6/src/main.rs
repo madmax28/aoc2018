@@ -128,8 +128,8 @@ impl Grid {
 
     fn part2(&self) -> usize {
         let start = Coord {
-            x: (self.bound.xmax - self.bound.xmin) / 2,
-            y: (self.bound.ymax - self.bound.ymin) / 2,
+            x: (self.bound.xmax + self.bound.xmin) / 2,
+            y: (self.bound.ymax + self.bound.ymin) / 2,
         };
 
         let mut area = 0;
