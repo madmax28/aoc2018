@@ -23,18 +23,7 @@ struct Bound {
 
 impl Coord {
     fn distance(&self, other: &Coord) -> i32 {
-        let mut dist = 0;
-        if self.x > other.x {
-            dist += self.x - other.x;
-        } else {
-            dist += other.x - self.x;
-        }
-        if self.y > other.y {
-            dist += self.y - other.y;
-        } else {
-            dist += other.y - self.y;
-        }
-        dist
+        (self.x - other.x).abs() + (self.y - other.y).abs()
     }
 
     fn closest(&self, others: &[Coord]) -> Option<Coord> {
