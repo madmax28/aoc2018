@@ -12,6 +12,7 @@ struct MarbleGame {
     scores: Vec<usize>,
     marbles: Vec<Marble>,
 
+    num_turns: usize,
     next_player_idx: usize,
     cur_marble: usize,
 }
@@ -31,6 +32,7 @@ impl MarbleGame {
                 }
             },
 
+            num_turns: num_marbles,
             next_player_idx: 0,
             cur_marble: 0,
         };
@@ -39,8 +41,8 @@ impl MarbleGame {
         game
     }
 
-    fn play_turns(&mut self, num_turns: usize) {
-        for marble in 1..=num_turns {
+    fn play(&mut self) {
+        for marble in 1..=self.num_turns {
             if marble % 23 != 0 {
                 let left_neighbor = self.marbles[self.cur_marble].next;
                 let right_neighbor = self.marbles[left_neighbor].next;
@@ -87,12 +89,12 @@ fn main() -> Result<(), Box<std::error::Error>> {
     let (num_players, mut num_marbles) = (tokens[0], tokens[1]);
 
     let mut game = MarbleGame::new(num_players, num_marbles);
-    game.play_turns(num_marbles);
+    game.play();
     println!("Part 1 max. score: {}", *game.scores.iter().max().expect("no scores"));
 
     num_marbles *= 100;
     let mut game = MarbleGame::new(num_players, num_marbles);
-    game.play_turns(num_marbles);
+    game.play();
     println!("Part 2 max. score: {}", *game.scores.iter().max().expect("no scores"));
 
     let d: Duration = now.elapsed();
@@ -107,7 +109,7 @@ mod tests {
 
     fn check_game(num_players: usize, num_marbles: usize, expected_score: usize) {
         let mut game = MarbleGame::new(num_players, num_marbles);
-        game.play_turns(num_marbles);
+        game.play();
         assert_eq!(*game.scores.iter().max().expect("no scores"), expected_score);
     }
 
