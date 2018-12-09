@@ -13,7 +13,6 @@ struct MarbleGame {
     marbles: Vec<Marble>,
 
     next_player_idx: usize,
-    next_marble: usize,
     cur_marble: usize,
 }
 
@@ -33,7 +32,6 @@ impl MarbleGame {
             },
 
             next_player_idx: 0,
-            next_marble: 1,
             cur_marble: 0,
         };
         game.marbles[0].next = 0;
@@ -42,7 +40,7 @@ impl MarbleGame {
     }
 
     fn play_turns(&mut self, num_turns: usize) {
-        for marble in self.next_marble..self.next_marble + num_turns {
+        for marble in 1..=num_turns {
             if marble % 23 != 0 {
                 let left_neighbor = self.marbles[self.cur_marble].next;
                 let right_neighbor = self.marbles[left_neighbor].next;
@@ -66,7 +64,10 @@ impl MarbleGame {
 
                 self.cur_marble = right_neighbor;
             }
-            self.next_player_idx = (self.next_player_idx + 1) % self.scores.len();
+            self.next_player_idx += 1;
+            if self.next_player_idx == self.scores.len() {
+                self.next_player_idx = 0;
+            }
         }
     }
 }
