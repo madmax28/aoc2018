@@ -1,7 +1,7 @@
-use std::time::{Duration, Instant};
 use std::fs;
+use std::time::{Duration, Instant};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct Marble {
     next: usize,
     prev: usize,
@@ -21,16 +21,7 @@ impl MarbleGame {
     fn new(num_players: usize, num_marbles: usize) -> MarbleGame {
         let mut game = MarbleGame {
             scores: vec![0; num_players],
-            marbles: {
-                let mut v = Vec::with_capacity(num_marbles + 1);
-                let p = v.as_mut_ptr();
-                let cap = v.capacity();
-
-                std::mem::forget(v);
-                unsafe {
-                    Vec::from_raw_parts(p, cap, cap)
-                }
-            },
+            marbles: vec![unsafe { std::mem::uninitialized() }; num_marbles + 1],
 
             num_turns: num_marbles,
             next_player_idx: 0,
@@ -90,12 +81,18 @@ fn main() -> Result<(), Box<std::error::Error>> {
 
     let mut game = MarbleGame::new(num_players, num_marbles);
     game.play();
-    println!("Part 1 max. score: {}", *game.scores.iter().max().expect("no scores"));
+    println!(
+        "Part 1 max. score: {}",
+        *game.scores.iter().max().expect("no scores")
+    );
 
     num_marbles *= 100;
     let mut game = MarbleGame::new(num_players, num_marbles);
     game.play();
-    println!("Part 2 max. score: {}", *game.scores.iter().max().expect("no scores"));
+    println!(
+        "Part 2 max. score: {}",
+        *game.scores.iter().max().expect("no scores")
+    );
 
     let d: Duration = now.elapsed();
     println!("> {}.{:03} seconds", d.as_secs(), d.subsec_millis());
@@ -110,7 +107,10 @@ mod tests {
     fn check_game(num_players: usize, num_marbles: usize, expected_score: usize) {
         let mut game = MarbleGame::new(num_players, num_marbles);
         game.play();
-        assert_eq!(*game.scores.iter().max().expect("no scores"), expected_score);
+        assert_eq!(
+            *game.scores.iter().max().expect("no scores"),
+            expected_score
+        );
     }
 
     #[test]
