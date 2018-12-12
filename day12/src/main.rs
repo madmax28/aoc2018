@@ -81,8 +81,6 @@ impl PotSet {
     fn tick(&mut self, n: u64) {
         let target_gen = self.generation + n;
         while self.generation < target_gen {
-            debug_assert!(self.generation <= target_gen);
-
             {
                 let mut tmp: Vec<char> = Vec::with_capacity(self.state.len() + 4);
                 let mut pattern: Vec<char> = vec!['.'; 5];
@@ -117,6 +115,7 @@ impl PotSet {
                     .insert(self.state.clone(), (self.generation, self.offset));
             }
         }
+        debug_assert!(self.generation == target_gen);
     }
 
     #[allow(dead_code)]
