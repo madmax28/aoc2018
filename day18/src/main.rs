@@ -1,4 +1,4 @@
-use gif::{Frame, Encoder, Repeat, SetParameter};
+use gif::{Encoder, Frame, Repeat, SetParameter};
 
 use std::collections::HashMap;
 use std::fs;
@@ -17,7 +17,14 @@ struct Map {
 
 impl Map {
     fn new(width: usize, height: usize, buf: Vec<char>) -> Self {
-        Map { width, height, buf, generation: 0, seen: HashMap::new(), did_visualize: false }
+        Map {
+            width,
+            height,
+            buf,
+            generation: 0,
+            seen: HashMap::new(),
+            did_visualize: false,
+        }
     }
 
     fn tick(&mut self, n: usize) {
@@ -36,15 +43,19 @@ impl Map {
                                 && *y2 < self.height as i32
                                 && (*x2 != x as i32 || *y2 != y as i32)
                         })
-                    .map(|(x, y)| self.buf[x as usize + y as usize * self.width]);
+                        .map(|(x, y)| self.buf[x as usize + y as usize * self.width]);
 
                     match self.buf[x + y * self.width] {
-                        '.' => if neighbors.filter(|c| *c == '|').count() >= 3 {
-                            tmp_buf[x + y * self.width] = '|';
-                        },
-                        '|' => if neighbors.filter(|c| *c == '#').count() >= 3 {
-                            tmp_buf[x + y * self.width] = '#';
-                        },
+                        '.' => {
+                            if neighbors.filter(|c| *c == '|').count() >= 3 {
+                                tmp_buf[x + y * self.width] = '|';
+                            }
+                        }
+                        '|' => {
+                            if neighbors.filter(|c| *c == '#').count() >= 3 {
+                                tmp_buf[x + y * self.width] = '#';
+                            }
+                        }
                         '#' => {
                             let ns: Vec<_> = neighbors.collect();
                             let num_yards = ns.iter().filter(|&c| *c == '#').count();
@@ -52,7 +63,7 @@ impl Map {
                             if num_yards == 0 || num_trees == 0 {
                                 tmp_buf[x + y * self.width] = '.';
                             }
-                        },
+                        }
                         _ => panic!("invalid character"),
                     }
                 }
@@ -86,13 +97,15 @@ impl Map {
             109, 54, 33, // brown
             0, 0, 0, //black
         ];
-        let mut encoder = Encoder::new(outfile, self.width as u16, self.height as u16, color_map).unwrap();
+        let mut encoder =
+            Encoder::new(outfile, self.width as u16, self.height as u16, color_map).unwrap();
         encoder.set(Repeat::Infinite).unwrap();
 
         for _ in 0..len {
             tmp_map.tick(1);
 
-            let buf: Vec<_> = tmp_map.buf
+            let buf: Vec<_> = tmp_map
+                .buf
                 .iter()
                 .map(|c| match c {
                     '|' => 0,
