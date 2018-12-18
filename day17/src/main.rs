@@ -215,10 +215,6 @@ impl str::FromStr for Grid {
             }
         }
 
-        assert!(xmin > 0);
-        xmin -= 1;
-        xmax += 1;
-
         let (width, height) = (xmax - xmin + 1, ymax - ymin + 1);
         let buf: Vec<char> = vec!['.'; width * height];
         let mut g = Grid::new(width, height, xmin, buf);
