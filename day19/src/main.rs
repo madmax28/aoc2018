@@ -194,16 +194,14 @@ const OPCODES: &[Opcode] = &[
 struct Iss {
     ipreg: u32,
     regs: Registers,
-    insn_mem: Vec<Instruction>,
     do_haxx: bool,
 }
 
 impl Iss {
-    fn new(ipreg: u32, insn_mem: Vec<Instruction>) -> Self {
+    fn new(ipreg: u32) -> Self {
         Iss {
             ipreg,
             regs: Registers::new(),
-            insn_mem,
             do_haxx: false,
         }
     }
@@ -238,13 +236,11 @@ impl Iss {
         Ok(())
     }
 
-    fn run_cycle(&mut self) -> Result<()> {
+    fn run_cycle(&mut self, insn_mem: &Vec<Instruction>) -> Result<()> {
         // Fetch instruction from memory
-        let ins = self
-            .insn_mem
+        let ins = insn_mem
             .get(self.regs.get_ip() as usize)
-            .ok_or(Error::MemoryAccessViolation)?
-            .clone();
+            .ok_or(Error::MemoryAccessViolation)?;
 
         for opcode in OPCODES {
             if ins.opcode == opcode.0 {
@@ -261,15 +257,15 @@ fn main() -> Result<()> {
     let input = fs::read_to_string("input")?;
     let input: Input = input.parse()?;
 
-    let mut iss = Iss::new(input.ipreg, input.ins);
+    let mut iss = Iss::new(input.ipreg);
 
     let mut tmp = iss.clone();
-    while tmp.run_cycle().is_ok() {}
+    while tmp.run_cycle(&input.ins).is_ok() {}
     println!("Part 1: {}", tmp.regs.get(0)?);
 
     iss.regs.set(0, 1)?;
     iss.enable_haxx();
-    while iss.run_cycle().is_ok() {}
+    while iss.run_cycle(&input.ins).is_ok() {}
     println!("Part 2: {}", iss.regs.get(0)?);
 
     Ok(())
